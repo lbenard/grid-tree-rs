@@ -764,7 +764,7 @@ where
         coordinates: V,
         mut consumer: impl FnMut(NodeKey<V>, T),
     ) {
-        self.unlink_child(relation);
+        self.unlink_child(relation, coordinates);
 
         let mut to_remove = SmallVec::<[(NodePtr, V); 32]>::new();
         to_remove.push((relation.child, coordinates));
@@ -797,12 +797,13 @@ where
         }
     }
 
-    fn unlink_child(&mut self, relation: &ChildRelation<V>) {
+    fn unlink_child(&mut self, relation: &ChildRelation<V>, coordinates: V) {
         if let Some(parent) = relation.parent.as_ref() {
-            self.root_nodes
-                .remove(&NodeKey::new(relation.child.level + 1, parent.coordinates));
             self.allocator_mut(parent.ptr.level)
                 .unlink_child(parent.ptr.alloc_ptr, parent.child_index);
+        } else {
+            self.root_nodes
+                .remove(&NodeKey::new(relation.child.level, coordinates));
         }
     }
 
